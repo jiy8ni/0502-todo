@@ -10,6 +10,7 @@ import styles from "@/styles/TodoList.module.css";
 // TodoItem 컴포넌트를 정의합니다.
 const TodoItem = ({ todo, onToggle, onDelete }) => {
   // 각 할 일 항목을 렌더링합니다.
+  const { id, text, datetime, completed } = todo;
   return (
     <li className={styles.todoItem}>
       {/* 체크박스를 렌더링하고, 체크박스의 상태를 할 일의 완료 상태와 동기화합니다.
@@ -23,6 +24,12 @@ const TodoItem = ({ todo, onToggle, onDelete }) => {
       >
         {todo.text}
       </span>
+      
+      {/* 날짜 */}
+      <span className={styles.todoDate}>
+        {datetime ? new Date(datetime).toLocaleDateString() : ""}
+      </span>
+
 
       {/* 삭제 버튼을 렌더링하고, 클릭 시 onDelete 함수를 호출하여 해당 할 일을 삭제합니다. */}
       <button onClick={onDelete}>Delete</button>

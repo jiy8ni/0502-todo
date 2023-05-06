@@ -28,10 +28,11 @@ const TodoList = () => {
   // 상태를 관리하는 useState 훅을 사용하여 할 일 목록과 입력값을 초기화합니다.
   const [todos, setTodos] = useState([]);
   const [input, setInput] = useState("");
+  const [inputDate, setInputDate] = useState("");
 
   const getTodos = async () => {
     // Firestore 쿼리를 만듭니다.
-    const q = query(todoCollection);
+    const q = query(todoCollection, orderBy("datetime", "asc"));
     // const q = query(collection(db, "todos"), where("user", "==", user.uid));
     // const q = query(todoCollection, orderBy("datetime", "desc"));
 
@@ -64,16 +65,24 @@ const TodoList = () => {
     //   completed: 완료 여부,
     // }
     // ...todos => {id: 1, text: "할일1", completed: false}, {id: 2, text: "할일2", completed: false}}, ..
+    if (!inputDate) {
+      alert("날짜를 입력해주세요.");
+      return;
+    }
+  
+
 
     // Firestore 에 추가한 할 일을 저장합니다.
     const docRef = await addDoc(todoCollection, {
       text: input,
       completed: false,
+      datetime: inputDate,
     });
 
     // id 값을 Firestore 에 저장한 값으로 지정합니다.
-    setTodos([...todos, { id: docRef.id, text: input, completed: false }]);
+    setTodos([...todos, { id: docRef.id, text: input, completed: false, datetime: inputDate }]);
     setInput("");
+    setInputDate("");
   };
 
   // toggleTodo 함수는 체크박스를 눌러 할 일의 완료 상태를 변경하는 함수입니다.
@@ -116,47 +125,56 @@ const TodoList = () => {
         Todo List
       </h1>
       {/* 할 일을 입력받는 텍스트 필드입니다. */}
-      <input
-        type="text"
-        // className={styles.itemInput}
-        // -- itemInput CSS code --
-        // input[type="text"].itemInput {
-        //   width: 100%;
-        //   padding: 5px;
-        //   margin-bottom: 10px;
-        // }
-        className="w-full p-1 mb-4 border border-gray-300 rounded"
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-      />
-      {/* 할 일을 추가하는 버튼입니다. */}
-      <div className="grid">
-        <button
-          // className={styles.addButton}
-          // -- addButton CSS code --
-          // button.addButton {
+      <div class = "flex flex-row">
+        <input
+          type="text"
+          // className={styles.itemInput}
+          // -- itemInput CSS code --
+          // input[type="text"].itemInput {
+          //   width: 100%;
           //   padding: 5px;
-          //   background-color: #0070f3;
-          //   color: white;
-          //   border: 1px solid #0070f3;
-          //   border-radius: 5px;
-          //   cursor: pointer;
+          //   margin-bottom: 10px;
           // }
-          //
-          // button.addButton:hover {
-          //   background-color: #fff;
-          //   color: #0070f3;
-          // }
-          className={`w-40
-                      justify-self-end
-                      p-1 mb-4
-                    bg-blue-500 text-white
-                      border border-blue-500 rounded
-                    hover:bg-white hover:text-blue-500`}
-          onClick={addTodo}
-        >
-          Add Todo
-        </button>
+          className="basis-1/2 p-1 mb-4 border-2 border-gray rounded"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+        />
+        <input
+          type="date"
+          className="basis-3/10 p-1 ml-2 mb-4 border-2 border-gray rounded"
+          value={inputDate}
+          onChange={(e) => setInputDate(e.target.value)}
+        />
+      
+        {/* 할 일을 추가하는 버튼입니다. */}
+        <div className="grid">
+          <button
+            // className={styles.addButton}
+            // -- addButton CSS code --
+            // button.addButton {
+            //   padding: 5px;
+            //   background-color: #0070f3;
+            //   color: white;
+            //   border: 1px solid #0070f3;
+            //   border-radius: 5px;
+            //   cursor: pointer;
+            // }
+            //
+            // button.addButton:hover {
+            //   background-color: #fff;
+            //   color: #0070f3;
+            // }
+            className={`basis-1/5
+                        justify-self-end
+                        p-1 ml-2 mb-4
+                      bg-blue-500 text-white
+                        border border-blue-500 rounded
+                      hover:bg-white hover:text-blue-500`}
+            onClick={addTodo}
+          >
+            Add Todo
+          </button>
+        </div>
       </div>
       {/* 할 일 목록을 렌더링합니다. */}
       <ul>
