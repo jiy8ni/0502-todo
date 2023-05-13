@@ -3,11 +3,11 @@
   상태 관리를 위해 `useState` 훅을 사용하여 할 일 목록과 입력값을 관리합니다.
   할 일 목록의 추가, 삭제, 완료 상태 변경 등의 기능을 구현하였습니다.
 */
-import React, { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
-import TodoItem from "@/components/TodoItem";
-import styles from "@/styles/TodoList.module.css";
 
+import React, { useState, useEffect } from "react";
+import { useSession, signOut } from "next-auth/react";
+import TodoItem_Admin from "@/components/TodoItem_Admin";
+import styles from "@/styles/TodoList_Admin.module.css";
 
 // firebase 관련 모듈을 불러옵니다.
 import { db } from "@/firebase";
@@ -27,7 +27,7 @@ import {
 const todoCollection = collection(db, "todos");
 
 // TodoList 컴포넌트를 정의합니다.
-const TodoList = () => {
+const TodoList_Admin = () => {
   // 상태를 관리하는 useState 훅을 사용하여 할 일 목록과 입력값을 초기화합니다.
   const [todos, setTodos] = useState([]);
   const [input, setInput] = useState("");
@@ -120,6 +120,12 @@ const TodoList = () => {
   // deleteTodo 함수는 할 일을 목록에서 삭제하는 함수입니다.
   const deleteTodo = (id) => {
     // Firestore 에서 해당 id를 가진 할 일을 삭제합니다.
+    // 관리자는 사용자의 할 일 목록을 삭제할 수 없으므로 삭제 권한 미부여
+    if (userId !== data?.user.id) {
+        alert("관리자 페이지에서는 할 일 목록 조회만 가능합니다.");
+        return;
+    }
+    
     const todoDoc = doc(todoCollection, id);
     deleteDoc(todoDoc);
 
@@ -136,31 +142,8 @@ const TodoList = () => {
   return (
     <div className={styles.container}>
       <h1 className="text-xl mb-4 font-bold underline underline-offset-4 decoration-dashed">
-        {data?.user?.name}'s Todo List
-      </h1>
-      {/* 할 일을 입력받는 텍스트 필드입니다. */}
-      <div class = "flex flex-row">
-        <input
-          type="text"
-          // className={styles.itemInput}
-          // -- itemInput CSS code --
-          // input[type="text"].itemInput {
-          //   width: 100%;
-          //   padding: 5px;
-          //   margin-bottom: 10px;
-          // }
-          className="basis-1/2 p-1 mb-4 border-2 border-gray rounded"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-        />
-        <input
-          type="date"
-          className="basis-3/10 p-1 ml-2 mb-4 border-2 border-gray rounded"
-          value={inputDate}
-          onChange={(e) => setInputDate(e.target.value)}
-        />
-      
-        {/* 할 일을 추가하는 버튼입니다. */}
+        {data?.user?.name} 관리자 페이지
+        </h1>
         <div className="grid">
           <button
             // className={styles.addButton}
@@ -184,25 +167,26 @@ const TodoList = () => {
                       bg-blue-500 text-white
                         border border-blue-500 rounded
                       hover:bg-white hover:text-blue-500`}
-            onClick={addTodo}
+            onClick={signOut()}
           >
-            Add Todo
+            sign Out
           </button>
-        </div>
+
       </div>
       {/* 할 일 목록을 렌더링합니다. */}
       <ul>
         {todos.map((todo) => (
-          <TodoItem
+          <TodoItem_Admin
             key={todo.id}
             todo={todo}
             onToggle={() => toggleTodo(todo.id)}
-            onDelete={() => deleteTodo(todo.id)}
+            onDelete={() => deleteTodo(todo.id, todo.userId)}
           />
         ))}
       </ul>
-  </div>
+      
+    </div>
   );
 };
 
-export default TodoList;
+export default TodoList_Admin;
